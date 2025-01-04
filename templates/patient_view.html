@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Patient Details</h1>
+    <p><strong>Name:</strong> {{ patient[1] }}</p>
+    <p><strong>Age:</strong> {{ patient[2] }}</p>
+    <p><strong>Gender:</strong> {{ patient[3] }}</p>
+    <p><strong>Contact:</strong> {{ patient[4] }}</p>
+    <p><strong>KYC:</strong> {{ patient[5] }}</p>
+    <p><strong>Concern:</strong> {{ patient[6] }}</p>
+    <a href="/patients">Back to Patient List</a>
+</body>
+</html>

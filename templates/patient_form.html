@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>{% if patient %}Edit Patient{% else %}Add New Patient{% endif %}</h1>
+    <form method="POST" action="{{ url_for('patient_form', id=patient['id'] if patient else None) }}">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" value="{{ patient['name'] if patient else '' }}" required><br><br>
+        
+        <label for="age">Age:</label>
+        <input type="number" name="age" id="age" value="{{ patient['age'] if patient else '' }}" required><br><br>
+        
+        <label for="gender">Gender:</label>
+        <input type="text" name="gender" id="gender" value="{{ patient['gender'] if patient else '' }}" required><br><br>
+        
+        <label for="contact">Contact:</label>
+        <input type="number" name="contact" id="contact" value="{{ patient['contact'] if patient else '' }}" required><br><br>
+        
+        <label for="kyc">KYC:</label>
+        <input type="text" name="kyc" id="kyc" value="{{ patient['kyc'] if patient else '' }}" required><br><br>
+        
+        <label for="concern">Concern:</label>
+        <input type="text" name="concern" id="concern" value="{{ patient['concern'] if patient else '' }}" required><br><br>
+        
+        <button type="submit">{% if patient %}Update Patient{% else %}Add Patient{% endif %}</button>
+    </form>
+    {% if patient %}
+        <a href="{{ url_for('patient_list') }}">Back to Patient List</a>
+    {% else %}
+        <a href="{{ url_for('patient_list') }}">Cancel</a>
+    {% endif %}
+</body>
+</html>
