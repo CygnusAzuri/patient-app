@@ -4,7 +4,7 @@ import pandas as pd
 from waitress import serve
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
+app.secret_key = 'dog8meow'
 
 # MySQL Database connection
 def get_db_connection():
@@ -28,10 +28,11 @@ def login():
         password = request.form['password']
 
         if username == DOCTOR_USERNAME and password == DOCTOR_PASSWORD:
-            session['logged_in'] = True
+            flash('Login Successful!','success')
             return redirect(url_for('patient_list'))
         else:
             flash("Invalid username or password.", "error")
+            return redirect(url_for('auth'))
     return render_template('auth.html')
 
 @app.route('/logout')
