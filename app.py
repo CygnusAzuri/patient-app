@@ -8,13 +8,18 @@ app.secret_key = 'dog8meow'
 
 # MySQL Database connection
 def get_db_connection():
-    conn = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='sakshijha2003',
-        database='patient_db'
-    )
-    return conn
+    try:
+        conn = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            password='sakshijha2003',
+            database='patient_db'
+        )
+        return conn
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        flash("Database connection failed.", "error")
+        return None
 
 # Predefined credentials for the doctor
 DOCTOR_USERNAME = "doctor"
@@ -28,7 +33,8 @@ def login():
         password = request.form['password']
 
         if username == DOCTOR_USERNAME and password == DOCTOR_PASSWORD:
-            flash('Login Successful!','success')
+            session['logged_in'] = True
+            flash('Login Successful!', 'success')
             return redirect(url_for('patient_list'))
         else:
             flash("Invalid username or password.", "error")
@@ -38,19 +44,19 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('auth'))
 
 @app.route("/", methods=["GET"])
 def home():
     if session.get('logged_in'):
         return redirect(url_for('patient_list'))  # Redirect to the patient dashboard if logged in
-    return redirect(url_for('login'))  # Redirect to login if not logged in
+    return redirect(url_for('auth'))  # Redirect to login if not logged in
 
 # Route to list all patients
 @app.route('/patients', methods=['GET'])
 def patient_list():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('auth'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)  # Use dictionary=True for easy data access
@@ -65,7 +71,7 @@ def patient_list():
 @app.route('/patient/<int:id>', methods=['GET'])
 def view_patient(id):
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('auth'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -85,7 +91,7 @@ def view_patient(id):
 @app.route('/patient/form/<int:id>', methods=['GET', 'POST'])
 def patient_form(id=None):
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('auth'))
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -145,7 +151,7 @@ def patient_form(id=None):
 @app.route('/export', methods=['GET'])
 def export_data():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('auth'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -162,7 +168,7 @@ def export_data():
 @app.route('/patient/delete/<int:id>', methods=['GET', 'POST'])
 def patient_delete(id):
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        return redirect(url_for('auth'))
 
     conn = get_db_connection()
     cursor = conn.cursor()
