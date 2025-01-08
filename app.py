@@ -2,18 +2,25 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import mysql.connector
 import pandas as pd
 from waitress import serve
+import secrets
+from dotenv import load_dotenv
+import os
+from flask import send_file
+import io
+
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'dog8meow'
+app.secret_key = secrets.token_hex(16)
 
 # MySQL Database connection
 def get_db_connection():
     try:
         conn = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='sakshijha2003',
-            database='patient_db'
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USERNAME'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME')
         )
         return conn
     except mysql.connector.Error as err:
@@ -161,9 +168,11 @@ def export_data():
     conn.close()
 
     df = pd.DataFrame(patients, columns=['ID', 'Name', 'Age', 'Gender', 'Contact', 'KYC', 'Concern'])
-    df.to_excel('patient_data.xlsx', index=False)
+    output = io.BytesIO()
+    df.to_excel(output, index=False)
+    output.seek(0)
 
-    return "Data exported to Excel!"
+    return send_file(output, attachment_filename="patient_data.xlsx", as_attachment=True)
 
 @app.route('/patient/delete/<int:id>', methods=['GET', 'POST'])
 def patient_delete(id):
@@ -182,4 +191,4 @@ def patient_delete(id):
     flash('Patient deleted successfully!', 'success')
     return redirect(url_for('patient_list'))
 if __name__ == '__main__':
-    app.run(debug=True)
+    serve(app, host='0.0.0.0', port=5000)
