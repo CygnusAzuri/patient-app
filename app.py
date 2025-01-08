@@ -181,3 +181,5 @@ def patient_delete(id):
 
     flash('Patient deleted successfully!', 'success')
     return redirect(url_for('patient_list'))
+if __name__ == '__main__':
+    app.run(debug=True)
