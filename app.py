@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import mysql.connector
+import psycopg2  # Changed from mysql.connector to psycopg2
 import pandas as pd
 from waitress import serve
 import secrets
@@ -13,17 +13,18 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
 
-# MySQL Database connection
+# PostgreSQL Database connection
 def get_db_connection():
     try:
-        conn = mysql.connector.connect(
+        conn = psycopg2.connect(
             host=os.getenv('DB_HOST'),
-            user=os.getenv('DB_USERNAME'),
-            password=os.getenv('DB_PASSWORD'),
-            database=os.getenv('DB_NAME')
+            port=os.getenv('DB_PORT'),
+            dbname=os.getenv('DB_NAME'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD')
         )
         return conn
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         print(f"Error: {err}")
         flash("Database connection failed.", "error")
         return None
@@ -66,7 +67,7 @@ def patient_list():
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)  # Use dictionary=True for easy data access
+    cursor = conn.cursor()  # No need to use dictionary=True here for PostgreSQL
     cursor.execute('SELECT * FROM patients')
     patients = cursor.fetchall()
     cursor.close()
@@ -81,7 +82,7 @@ def view_patient(id):
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     cursor.execute('SELECT * FROM patients WHERE id = %s', (id,))
     patient = cursor.fetchone()
     cursor.close()
@@ -101,7 +102,7 @@ def patient_form(id=None):
         return redirect(url_for('login'))
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # If editing a patient
     if id:
@@ -145,7 +146,7 @@ def patient_form(id=None):
         if existing_patient:
             flash("A patient with this contact already exists.", "error")
         else:
-            cursor.execute('''
+            cursor.execute(''' 
                 INSERT INTO patients (name, age, gender, contact, kyc, concern) 
                 VALUES (%s, %s, %s, %s, %s, %s)
             ''', (name, age, gender, contact, kyc, concern))
@@ -190,5 +191,6 @@ def patient_delete(id):
 
     flash('Patient deleted successfully!', 'success')
     return redirect(url_for('patient_list'))
+
 if __name__ == '__main__':
     serve(app, host='0.0.0.0', port=5000)
